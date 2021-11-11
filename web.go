@@ -21,16 +21,9 @@ func echo(w http.ResponseWriter, r *http.Request) {
 	}
 	defer c.Close()
 	for {
-		// эта функция обрабатывает запрос из браузера
 		mt, message, err := c.ReadMessage()
-		// закидывает команду в канал для необработанных команд
-		// в дальнейшем, эту комманду подхватит рутина run_ssh_client,
-		// которая постоянно проверяет этот канал
 		log.Println("!!!echo server: got new message: ", string(message), "\n sending it to ch1")
 		querCh <- string(message)
-		// а потом запускается рутина,
-		// которая подождет ответа от  run_ssh_client в канале
-		// и отправит ответ в браузер
 		go func() {
 			log.Println("!!!echo responder - sending responce")
 			message := []byte(<-responceCh)
@@ -53,15 +46,12 @@ func home(w http.ResponseWriter, r *http.Request) {
 func main() {
 	go serve()
 	flag.Parse()
-	// log.SetFlags(0)
+	log.SetFlags(0)
 	http.HandleFunc("/echo", echo)
 	http.HandleFunc("/", home)
 	log.Fatal(http.ListenAndServe(*addr, nil))
 }
 
-// func sendRespFromSshCLient() {
-
-// }
 
 var querCh = make(chan string)
 var responceCh = make(chan string)
