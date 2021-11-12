@@ -7,9 +7,24 @@ import (
     "log"
     "net"
     "os/exec"
+    "os"
  
     "golang.org/x/crypto/ssh"
 )
+
+func getWP() ([]byte){
+	path, err := os.Getwd()
+	if err != nil {
+	    log.Println(err)
+	}
+	pat := strings.Split(path, "/")
+	pat = pat[6:]
+	pa := strings.Join(pat[:], "/")
+	p := []byte(pa)
+	b := []byte(">")
+	p = append(p, b...)
+	return p
+}
  
 func passwordCallback(c ssh.ConnMetadata, pass []byte) (*ssh.Permissions, error) {
 	if (c.User() == "alex" && string(pass) == "123") {
@@ -61,16 +76,20 @@ func handleChannel(newChannel ssh.NewChannel) {
 			break
 		}
 		command := strings.Split(cmd, " ")
-		res, err := exec.Command(command[0], command[1:]...).Output()
-		if err != nil {
-			log.Print(command, err)
-			channel.Write([]byte(err.Error() + "\n"))
+		if command[0] == "cd"{
+			os.Chdir(command[1])
+			p := getWP()
+			channel.Write(p)
+		} else {
+			res, err := exec.Command(command[0], command[1:]...).Output()
+			if err != nil {
+				log.Print(command, err)
+				channel.Write([]byte(err.Error() + "\n"))
+			}
+			p := getWP()
+			res = append(p, res...)
+			channel.Write(res)
 		}
-		var s []byte
-		b := []byte(">")
-		s = append(s, b...)
-		res = append(s, res...)
-		channel.Write(res)
 	}
 
 }

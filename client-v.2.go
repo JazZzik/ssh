@@ -60,12 +60,9 @@ func serve() {
 
 
 func connectToHost(user, host string) (*ssh.Client, *ssh.Session, error) {
-	var pass string
-	fmt.Printf("Enter Password for %s: ", username)
-	fmt.Scanf("%s\n", &pass)
 	sshConfig := &ssh.ClientConfig{
 		User: user,
-		Auth: []ssh.AuthMethod{ssh.Password(pass)},
+		Auth: []ssh.AuthMethod{ssh.Password(password)},
 	}
 	sshConfig.HostKeyCallback = ssh.InsecureIgnoreHostKey()
 
